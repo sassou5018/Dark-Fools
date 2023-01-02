@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,6 +13,10 @@ public class GameManager : MonoBehaviour
     private Collider2D myCollider;
     private int enemiesKilled = 0;
     private PlayerCombat playerCombat;
+    public Transform endGamePoint;
+    public LayerMask whatIsPlayer;
+    public TextMeshProUGUI victoryText;
+    public float endGamePointRange = 2.0f;
     // Start is called before the first frame update
     void Start()
     {
@@ -25,7 +30,13 @@ public class GameManager : MonoBehaviour
     {
         enemiesKilled = playerCombat.getEnemiesKilled();
         Scene currentScene = SceneManager.GetActiveScene();
-        if(enemiesKilled >= enemiesCount){
+        Collider2D playerCollide = Physics2D.OverlapCircle(endGamePoint.position, endGamePointRange, whatIsPlayer);
+        if(playerCollide != null && enemiesKilled < enemiesCount){
+            victoryText.text = "You need to kill " +(enemiesCount - enemiesKilled) + " more enemies";
+        } else {
+            victoryText.text = "";
+        }
+        if(enemiesKilled >= enemiesCount && playerCollide != null){
             myCollider.enabled = false;
             playerCollider.enabled = false;
             playerCombat.isDead = true;
@@ -38,5 +49,12 @@ public class GameManager : MonoBehaviour
             SceneManager.LoadScene(currentScene.buildIndex);
         }
         
+    }
+
+    private void OnDrawGizmosSelected(){
+        if(endGamePoint == null)
+            return;
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(endGamePoint.position, endGamePointRange);
     }
 }
